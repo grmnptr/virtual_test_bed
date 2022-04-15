@@ -137,6 +137,7 @@ pump_force = -20000. # [N / m^3]
     variable = v_x
     block = 'fuel pump hx'
     momentum_component = 'x'
+    advected_interp_method = 'vanLeer'
   []
   [u_turbulent_diffusion_rans]
     type = INSFVMixingLengthReynoldsStress
@@ -166,6 +167,7 @@ pump_force = -20000. # [N / m^3]
     variable = v_y
     block = 'fuel pump hx'
     momentum_component = 'y'
+    advected_interp_method = 'vanLeer'
   []
   [v_turbulent_diffusion_rans]
     type = INSFVMixingLengthReynoldsStress
@@ -372,6 +374,7 @@ pump_force = -20000. # [N / m^3]
     type = Exodus
     execute_on = 'final'
   []
+  exodus = true
   # Reduce base output
   print_linear_converged_reason = false
   print_linear_residuals = false

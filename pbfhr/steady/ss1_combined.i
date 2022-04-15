@@ -129,6 +129,7 @@ power_density = ${fparse total_power / model_vol / 258 * 236}  # adjusted using 
 
 [Problem]
   coord_type = RZ
+  kernel_coverage_check = false
 []
 
 [GlobalParams]
@@ -182,6 +183,8 @@ power_density = ${fparse total_power / model_vol / 258 * 236}  # adjusted using 
     block = ${blocks_fluid}
     initial_condition = 1e5
   []
+[]
+[AuxVariables]
   [temp_fluid]
     type = INSFVEnergyVariable
     block = ${blocks_fluid}
@@ -209,6 +212,7 @@ power_density = ${fparse total_power / model_vol / 258 * 236}  # adjusted using 
     type = PINSFVMomentumAdvection
     variable = vel_x
     momentum_component = x
+    advected_interp_method = 'vanLeer'
   []
   [vel_x_viscosity]
     type = PINSFVMomentumDiffusion
@@ -238,6 +242,7 @@ power_density = ${fparse total_power / model_vol / 258 * 236}  # adjusted using 
     type = PINSFVMomentumAdvection
     variable = vel_y
     momentum_component = y
+    advected_interp_method = 'vanLeer'
   []
   [vel_y_viscosity]
     type = PINSFVMomentumDiffusion
@@ -270,84 +275,85 @@ power_density = ${fparse total_power / model_vol / 258 * 236}  # adjusted using 
   []
 
   # Fluid Energy equation.
-  [temp_fluid_time]
-    type = PINSFVEnergyTimeDerivative
-    variable = temp_fluid
-    cp = 'cp'
-    is_solid = false
-  []
-  [temp_fluid_advection]
-    type = PINSFVEnergyAdvection
-    variable = temp_fluid
-    advected_quantity = 'rho_cp_temp'
-  []
-  [temp_fluid_conduction]
-    type = PINSFVEnergyAnisotropicDiffusion
-    variable = temp_fluid
-    effective_diffusivity = false
-    kappa = 'kappa'
-  []
-  [temp_solid_to_fluid]
-    type = PINSFVEnergyAmbientConvection
-    variable = temp_fluid
-    is_solid = false
-    h_solid_fluid = 'alpha'
-  []
+  # [temp_fluid_time]
+  #   type = PINSFVEnergyTimeDerivative
+  #   variable = temp_fluid
+  #   cp = 'cp'
+  #   is_solid = false
+  # []
+  # [temp_fluid_advection]
+  #   type = PINSFVEnergyAdvection
+  #   variable = temp_fluid
+  #   advected_quantity = 'rho_cp_temp'
+  #   # advected_interp_method = 'vanLeer'
+  # []
+  # [temp_fluid_conduction]
+  #   type = PINSFVEnergyAnisotropicDiffusion
+  #   variable = temp_fluid
+  #   effective_diffusivity = false
+  #   kappa = 'kappa'
+  # []
+  # [temp_solid_to_fluid]
+  #   type = PINSFVEnergyAmbientConvection
+  #   variable = temp_fluid
+  #   is_solid = false
+  #   h_solid_fluid = 'alpha'
+  # []
 
   # Solid Energy equation.
-  [temp_solid_time_core]
-    type = PINSFVEnergyTimeDerivative
-    variable = temp_solid
-    cp = 'cp_s'
-    rho = ${solid_rho}
-    is_solid = true
-    block = ${blocks_fluid}
-  []
-  [temp_solid_time]
-    type = INSFVEnergyTimeDerivative
-    variable = temp_solid
-    cp_name = 'cp_s'
-    block = ${blocks_solid}
-  []
-  [temp_solid_conduction_core]
-    type = FVDiffusion
-    variable = temp_solid
-    coeff = 'kappa_s'
-    block = ${blocks_fluid}
-  []
-  [temp_solid_conduction]
-    type = FVDiffusion
-    variable = temp_solid
-    coeff = 'k_s'
-    block = ${blocks_solid}
-  []
-  [temp_solid_source]
-    type = FVCoupledForce
-    variable = temp_solid
-    v = power_distribution
-    block = '3'
-  []
-  [temp_fluid_to_solid]
-    type = PINSFVEnergyAmbientConvection
-    variable = temp_solid
-    is_solid = true
-    h_solid_fluid = 'alpha'
-    block = ${blocks_fluid}
-  []
+  # [temp_solid_time_core]
+  #   type = PINSFVEnergyTimeDerivative
+  #   variable = temp_solid
+  #   cp = 'cp_s'
+  #   rho = ${solid_rho}
+  #   is_solid = true
+  #   block = ${blocks_fluid}
+  # []
+  # [temp_solid_time]
+  #   type = INSFVEnergyTimeDerivative
+  #   variable = temp_solid
+  #   cp = 'cp_s'
+  #   block = ${blocks_solid}
+  # []
+  # [temp_solid_conduction_core]
+  #   type = FVDiffusion
+  #   variable = temp_solid
+  #   coeff = 'kappa_s'
+  #   block = ${blocks_fluid}
+  # []
+  # [temp_solid_conduction]
+  #   type = FVDiffusion
+  #   variable = temp_solid
+  #   coeff = 'k_s'
+  #   block = ${blocks_solid}
+  # []
+  # [temp_solid_source]
+  #   type = FVCoupledForce
+  #   variable = temp_solid
+  #   v = power_distribution
+  #   block = '3'
+  # []
+  # [temp_fluid_to_solid]
+  #   type = PINSFVEnergyAmbientConvection
+  #   variable = temp_solid
+  #   is_solid = true
+  #   h_solid_fluid = 'alpha'
+  #   block = ${blocks_fluid}
+  # []
 []
 
-[FVInterfaceKernels]
-  [diffusion_interface]
-    type = FVDiffusionInterface
-    boundary = 'bed_left'
-    subdomain1 = '3 4 5'
-    subdomain2 = '1 2 6'
-    coeff1 = 'kappa_s'
-    coeff2 = 'k_s'
-    variable1 = 'temp_solid'
-    variable2 = 'temp_solid'
-  []
-[]
+# [FVInterfaceKernels]
+#   [diffusion_interface]
+#     type = FVDiffusionInterface
+#     boundary = 'bed_left'
+#     subdomain1 = '3 4 5'
+#     subdomain2 = '1 2 6'
+#     coeff1 = 'kappa_s'
+#     coeff2 = 'k_s'
+#     variable1 = 'temp_solid'
+#     variable2 = 'temp_solid'
+#   []
+# []
 
 # ==============================================================================
 # AUXVARIABLES AND AUXKERNELS
@@ -441,12 +447,12 @@ power_density = ${fparse total_power / model_vol / 258 * 236}  # adjusted using 
   []
 
   #TODO: Switch to a flux BC (eps * phi * T)
-  [inlet_temp_fluid]
-    type = FVDirichletBC
-    variable = temp_fluid
-    value = ${fparse inlet_T_fluid}
-    boundary = 'bed_horizontal_bottom'
-  []
+  # [inlet_temp_fluid]
+  #   type = FVDirichletBC
+  #   variable = temp_fluid
+  #   value = ${fparse inlet_T_fluid}
+  #   boundary = 'bed_horizontal_bottom'
+  # []
 
   [free-slip-wall-x]
     type = INSFVNaturalFreeSlipBC
@@ -461,12 +467,12 @@ power_density = ${fparse total_power / model_vol / 258 * 236}  # adjusted using 
     momentum_component = y
   []
 
-  [outer]
-    type = FVDirichletBC
-    variable = temp_solid
-    boundary = 'brick_surface'
-    value = ${fparse 35 + 273.15}
-  []
+  # [outer]
+  #   type = FVDirichletBC
+  #   variable = temp_solid
+  #   boundary = 'brick_surface'
+  #   value = ${fparse 35 + 273.15}
+  # []
 
   [outlet_p]
     type = INSFVOutletPressureBC
@@ -696,7 +702,7 @@ power_density = ${fparse total_power / model_vol / 258 * 236}  # adjusted using 
   # Iterations parameters
   l_max_its = 500
   l_tol     = 1e-8
-  nl_max_its = 25
+  nl_max_its = 10
   nl_rel_tol = 5e-7
   nl_abs_tol = 5e-7
 
@@ -704,7 +710,7 @@ power_density = ${fparse total_power / model_vol / 258 * 236}  # adjusted using 
   automatic_scaling = true
 
   # Problem time parameters
-  dtmin = 0.1
+  dtmin = 1e-8
   dtmax = 2e4
   end_time = 1e6
 
@@ -823,11 +829,11 @@ power_density = ${fparse total_power / model_vol / 258 * 236}  # adjusted using 
   #   diffusivity = 'k_s'
   #   execute_on = 'INITIAL TIMESTEP_END'
   # []
-  [flow_in_m]
-    type = VolumetricFlowRate
-    boundary = 'bed_horizontal_bottom OR_horizontal_bottom'
-    advected_quantity = 'rho_cp_temp'
-  []
+  # [flow_in_m]
+  #   type = VolumetricFlowRate
+  #   boundary = 'bed_horizontal_bottom OR_horizontal_bottom'
+  #   advected_quantity = 'rho_cp_temp'
+  # []
   # [diffusion_in]
   #   type = ADSideVectorDiffusivityFluxIntegral
   #   variable = temp_fluid
@@ -835,16 +841,16 @@ power_density = ${fparse total_power / model_vol / 258 * 236}  # adjusted using 
   #   diffusivity = 'kappa'
   # []
   # diffusion at the top is 0 because of the fully developped flow assumption
-  [flow_out]
-    type = VolumetricFlowRate
-    boundary = 'bed_horizontal_top plenum_top OR_horizontal_top'
-    advected_quantity = 'rho_cp_temp'
-  []
-  [core_balance]
-    type = ParsedPostprocessor
-    pp_names = 'power flow_in_m flow_out' #diffusion_in  outer_heat_loss'
-    function = 'power - flow_in_m - flow_out' # + diffusion_in + outer_heat_loss'
-  []
+  # [flow_out]
+  #   type = VolumetricFlowRate
+  #   boundary = 'bed_horizontal_top plenum_top OR_horizontal_top'
+  #   advected_quantity = 'rho_cp_temp'
+  # []
+  # [core_balance]
+  #   type = ParsedPostprocessor
+  #   pp_names = 'power flow_in_m flow_out' #diffusion_in  outer_heat_loss'
+  #   function = 'power - flow_in_m - flow_out' # + diffusion_in + outer_heat_loss'
+  # []
 
   # Bypass
   [mass_flow_OR]
@@ -859,16 +865,16 @@ power_density = ${fparse total_power / model_vol / 258 * 236}  # adjusted using 
     advected_quantity = ${rho_fluid}
     execute_on = 'INITIAL TIMESTEP_END'
   []
-  [bypass_fraction]
-    type = ParsedPostprocessor
-    pp_names = 'mass_flow_OR mass_flow_out'
-    function = 'mass_flow_OR / mass_flow_out'
-  []
-  [plenum_fraction]
-    type = ParsedPostprocessor
-    pp_names = 'mass_flow_plenum mass_flow_out'
-    function = 'mass_flow_plenum / mass_flow_out'
-  []
+  # [bypass_fraction]
+  #   type = ParsedPostprocessor
+  #   pp_names = 'mass_flow_OR mass_flow_out'
+  #   function = 'mass_flow_OR / mass_flow_out'
+  # []
+  # [plenum_fraction]
+  #   type = ParsedPostprocessor
+  #   pp_names = 'mass_flow_plenum mass_flow_out'
+  #   function = 'mass_flow_plenum / mass_flow_out'
+  # []
 
   # Miscellaneous
   [h]
@@ -886,7 +892,7 @@ power_density = ${fparse total_power / model_vol / 258 * 236}  # adjusted using 
   csv = true
   [console]
     type = Console
-    hide = 'pressure_in pressure_out mass_flow_OR mass_flow_plenum max_vy flow_in_m flow_out h'
+    # hide = 'pressure_in pressure_out mass_flow_OR mass_flow_plenum max_vy flow_in_m flow_out h'
   []
   [exodus]
     type = Exodus
